@@ -1,0 +1,29 @@
+{
+    "name": "yarm/tei",
+    "description": "An add-on for the YARM Reference Manager Application. Contains the tei controller",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Yarm\\Tei\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Herbert Van Uffelen",
+            "email": "herbert.van-uffelen@univie.ac.at"
+        }
+    ],
+
+    "minimum-stability": "dev",
+    "require": {
+
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Yarm\\Tei\\TeiServiceProvider"
+            ]
+        }
+    }
+}
