@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace Yarm\Tei\Http\Controllers;
 
 use App\Models\File;
 use App\Models\Ref;
