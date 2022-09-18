@@ -2,12 +2,14 @@
 
 namespace Yarm\Tei\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Models\File;
 use App\Models\Ref;
 use App\Models\Style;
 use Illuminate\Support\Facades\Storage;
 
 class TeiController extends Controller
+
 {
     public static function unzipTei($data, $Files, $fileToBookshelfYes, $fileToBookshelfNo)
     {
@@ -305,5 +307,4 @@ class TeiController extends Controller
             return 'File not found';
         }
     }
-
 }
