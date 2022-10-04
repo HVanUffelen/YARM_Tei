@@ -15,17 +15,17 @@ class TeiController extends Controller
     {
         $fileData = pathinfo($data['name']);
 
-        if (!storage::exists('DLBTUploads/unzipped/' . $fileData['filename'] . '/tei.xml')) {
+        if (!storage::exists('YARMDBUploads/unzipped/' . $fileData['filename'] . '/tei.xml')) {
             $zip = new \ZipArchive;
-            $res = $zip->open(storage_path() . '/app/DLBTUploads/' . $data['name']);
+            $res = $zip->open(storage_path() . '/app/YARMDBUploads/' . $data['name']);
             if ($res === true)
-                $zip->extractTo(storage_path() . '/app/DLBTUploads/unzipped/' . $fileData['filename'] . '/');
+                $zip->extractTo(storage_path() . '/app/YARMDBUploads/unzipped/' . $fileData['filename'] . '/');
             $zip->close();
             //check if zip contains xml!
-            if (storage::exists('DLBTUploads/unzipped/' . $fileData['filename'] . '/tei.xml')) {
+            if (storage::exists('YARMDBUploads/unzipped/' . $fileData['filename'] . '/tei.xml')) {
                 $Files .= $fileToBookshelfYes;
             } else {
-                storage::deleteDirectory('DLBTUploads/unzipped/' . $fileData['filename']);
+                storage::deleteDirectory('YARMDBUploads/unzipped/' . $fileData['filename']);
                 $Files .= $fileToBookshelfNo;
             }
         } else {
@@ -54,7 +54,7 @@ class TeiController extends Controller
 
         try {
             $name = pathinfo($fileToConvert, PATHINFO_FILENAME);
-            $fileToConvert = 'DLBTUploads/unzipped/' . $name . '/' . 'tei.xml';
+            $fileToConvert = 'YARMDBUploads/unzipped/' . $name . '/' . 'tei.xml';
             if (storage::exists($fileToConvert)) {
                 $fileName = 'unzipped/' . $name . '/' . 'tei.xml';
                 try {
@@ -114,13 +114,13 @@ class TeiController extends Controller
         if ($extension == 'xml') {
             if (self::checkIfTEI($file)) {
                 $newTEIFile = self::putNewTeiHeaderinFile($file, self::createNewTEIHeader($fileId), true);
-                Storage::disk('local')->put('/DLBTUploads/' . $fileName, $newTEIFile);
+                Storage::disk('local')->put('/YARMDBUploads/' . $fileName, $newTEIFile);
                 return true;
 
             }
         } else if ($extension == 'zip') {
             $zip = new \ZipArchive;
-            if ($zip->open(storage_path() . '/app/DLBTUploads/' . $fileName, \ZipArchive::CREATE) === TRUE) {
+            if ($zip->open(storage_path() . '/app/YARMDBUploads/' . $fileName, \ZipArchive::CREATE) === TRUE) {
                 if ($zip->locateName('tei.xml') !== false) {
                     $newTEIFile = self::putNewTeiHeaderinFile(self::getTeiFromZip($fileName, $zip), self::createNewTEIHeader($fileId), false);
 
@@ -131,9 +131,9 @@ class TeiController extends Controller
                     //delete temp directory...
                     $dirAndFileName = pathinfo($fileName, PATHINFO_DIRNAME);
                     if ($dirAndFileName == '.')
-                        Storage::delete('/DLBTUploads/unzipped/temp/' . $fileName);
+                        Storage::delete('/YARMDBUploads/unzipped/temp/' . $fileName);
                     else
-                        Storage::deleteDirectory('/DLBTUploads/unzipped/temp/' . $dirAndFileName);
+                        Storage::deleteDirectory('/YARMDBUploads/unzipped/temp/' . $dirAndFileName);
                     return 1;
                 }
             }
@@ -170,8 +170,8 @@ class TeiController extends Controller
      */
     private static function getTeiFromZip($fileName, $zip)
     {
-        $zip->extractTo(storage_path() . '/app/DLBTUploads/unzipped/temp/' . $fileName);
-        $fileTei = storage::get('/DLBTUploads/unzipped/temp/' . $fileName . '/' . 'tei.xml');
+        $zip->extractTo(storage_path() . '/app/YARMDBUploads/unzipped/temp/' . $fileName);
+        $fileTei = storage::get('/YARMDBUploads/unzipped/temp/' . $fileName . '/' . 'tei.xml');
 
         return $fileTei;
     }
@@ -236,7 +236,7 @@ class TeiController extends Controller
         $TEIXenoDataMods = str_replace("\n\n", "\n\t", $TEIXenoDataMods);
 
         $data['ref'] = $record;
-        $title = trim(preg_replace('/\s+/', ' ', strip_tags(ExportController::reformatBladeExport(view('dlbt.styles.format_as_' . Style::getNameStyle(), $data)->render()))));
+        $title = trim(preg_replace('/\s+/', ' ', strip_tags(ExportController::reformatBladeExport(view('yarmdbviews.styles.format_as_' . Style::getNameStyle(), $data)->render()))));
 
 
         $TEIArray[] = array(
@@ -244,7 +244,7 @@ class TeiController extends Controller
             array("Name" => "TEIAuthor", "Value" => $TEIAuthor = $record['author']),
             array("Name" => "TEICreationDate", "Value" => $TEICreationDate = $record['created_at']),
             array("Name" => "TEILicence", "Value" => ''), //ToDo Do we really want to use license here?
-            array("Name" => "TEIIdentifier", "Value" => "DLBT_Upload"),
+            array("Name" => "TEIIdentifier", "Value" => strtolower(config('yarm.sys_name')) ."_Upload"),
             array("Name" => "TEIXenodata", "Value" => $TEIXenoDataMods),
         );
         return $TEIArray;
@@ -269,7 +269,7 @@ class TeiController extends Controller
         $xsl = app_path('Includes/xsl/dforms2mods.xsl');
         $xmlversion1 = simplexml_load_string($xml);
 
-        $modsCollectionString = ExportController::throughXsl($xmlversion1, $xsl, "DLBT", "");
+        $modsCollectionString = ExportController::throughXsl($xmlversion1, $xsl, "STD", "");
         return $modsCollectionString;
     }
 
@@ -279,14 +279,14 @@ class TeiController extends Controller
      */
     public function convertXMLToHTML($file)
     {
-        $fileWithFullPath = storage_path() . '/app/DLBTUploads/' . $file;
+        $fileWithFullPath = storage_path() . '/app/YARMDBUploads/' . $file;
 
         $SaxonJarWithPath = app_path('Includes/Saxon/');
         $teiToHtmlXslWithPath = app_path('/Includes/xsl/Tei/stylesheet/html/');
 
         if (file_exists($fileWithFullPath)) {
-            if (storage::exists('DLBTUploads/' . $file)) {
-                $fileToCheckOnTEI = storage::get('DLBTUploads/' . $file);
+            if (storage::exists('YARMDBUploads/' . $file)) {
+                $fileToCheckOnTEI = storage::get('YARMDBUploads/' . $file);
             }
 
             if (strpos($fileToCheckOnTEI, 'teiHeader') !== false) {
