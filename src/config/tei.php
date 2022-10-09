@@ -2,6 +2,6 @@
 
 return [
 
-  'tei_present' => "True"
+  'tei_present' => true
 
 ];
