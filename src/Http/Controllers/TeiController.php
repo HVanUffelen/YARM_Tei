@@ -236,7 +236,7 @@ class TeiController extends Controller
         $TEIXenoDataMods = str_replace("\n\n", "\n\t", $TEIXenoDataMods);
 
         $data['ref'] = $record;
-        $title = trim(preg_replace('/\s+/', ' ', strip_tags(ExportController::reformatBladeExport(view('yarmdbviews.styles.format_as_' . Style::getNameStyle(), $data)->render()))));
+        $title = trim(preg_replace('/\s+/', ' ', strip_tags(ExportController::reformatBladeExport(view('yarmdbviews.styles.format_as_' . strtolower(Style::getNameStyle()), $data)->render()))));
 
 
         $TEIArray[] = array(
